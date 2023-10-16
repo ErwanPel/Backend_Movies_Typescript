@@ -11,6 +11,7 @@ const schemaEnv = z.object({
       message: "NODE_ENV must be 'production' or 'development",
     }),
   APIKEY: z.string(),
+  MONGOOSE_URL: z.string(),
 });
 
 export const envVariables = schemaEnv.parse(process.env);

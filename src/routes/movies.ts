@@ -36,6 +36,7 @@ const MoviesSchema = z.object({
 
 movieRouter.get("/movies", async (req: Request, res: Response) => {
   const { page } = req.query;
+
   try {
     const { data } = await axios.get(
       `https://lereacteur-bootcamp-api.herokuapp.com/api/allocine/movies/top_rated?page=${page}`,
@@ -43,7 +44,18 @@ movieRouter.get("/movies", async (req: Request, res: Response) => {
         headers: { Authorization: `Bearer ${APIKEY}` },
       }
     );
+
     const movieParse = MoviesSchema.parse(data);
+    movieParse.results.sort((a, b) => {
+      if (a.title < b.title) {
+        return -1;
+      }
+      if (a.title > b.title) {
+        return 1;
+      }
+      return 0;
+    });
+
     res.status(200).json(movieParse);
   } catch (error) {
     if (error instanceof ZodError) {

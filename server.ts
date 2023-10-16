@@ -1,12 +1,16 @@
 import express, { Request, Response } from "express";
 import { envVariables } from "./src/zodFolder/envVariables";
 import { movieRouter } from "./src/routes/movies";
-import { authRouter } from "./src/routes/Authentificate";
-const { PORT, NODE_ENV, APIKEY } = envVariables;
+import { userRouter } from "./src/routes/user";
+import { reviewRouter } from "./src/routes/review";
+const { PORT, NODE_ENV, MONGOOSE_URL } = envVariables;
+import mongoose from "mongoose";
+
+mongoose.connect(MONGOOSE_URL);
 
 const app = express();
 
-app.use(express.json()).use(movieRouter).use(authRouter);
+app.use(express.json()).use(movieRouter).use(userRouter).use(reviewRouter);
 
 app.get("/", (req: Request, res: Response) => {
   try {
