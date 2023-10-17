@@ -85,7 +85,7 @@ reviewRouter.get(
         model: "User",
       });
       if (findMovie) {
-        res.status(200).json(findMovie);
+        res.status(200).json(findMovie.review);
       } else {
         res.status(200).json([]);
       }
