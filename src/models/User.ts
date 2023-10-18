@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 export interface IUser {
   username: string;
   email: string;
-  photo: [String];
+  photo: [];
   salt: string;
   token: string;
   hash: string;
@@ -12,7 +12,7 @@ export interface IUser {
 const UserSchema = new mongoose.Schema<IUser>({
   username: { type: String, unique: true },
   email: { type: String, unique: true },
-  photo: [String],
+  photo: [],
   salt: { require: true, type: String },
   token: { require: true, type: String },
   hash: { require: true, type: String },

@@ -5,6 +5,9 @@ const uid2 = require("uid2");
 import { IUser, User } from "../models/User";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 const fileUpload = require("express-fileupload");
+const cloudinary = require("cloudinary").v2;
+import { convertToBase64 } from "../tools/convertToBase64";
+import { UploadedFile } from "express-fileupload";
 
 export const userRouter = express.Router();
 
@@ -26,7 +29,21 @@ userRouter.post(
           salt,
           token,
           hash,
+          photo: [],
         });
+
+        if (req.files) {
+          const pictureToUpload: UploadedFile | UploadedFile[] | undefined =
+            req.files.picture;
+          const result = await cloudinary.uploader.upload(
+            convertToBase64(pictureToUpload),
+            {
+              folder: `/GiveMovies/users/${newUser._id}`,
+            }
+          );
+          console.log(result);
+          newUser.photo.push(result);
+        }
 
         await newUser.save();
 

@@ -12,6 +12,9 @@ const schemaEnv = z.object({
     }),
   APIKEY: z.string(),
   MONGOOSE_URL: z.string(),
+  CLOUDINARY_NAME: z.string(),
+  CLOUDINARY_APIKEY: z.string(),
+  CLOUDINARY_APISECRET: z.string(),
 });
 
 export const envVariables = schemaEnv.parse(process.env);
