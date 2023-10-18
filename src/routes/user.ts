@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 const SHA256 = require("crypto-js/sha256");
 const encBase64 = require("crypto-js/enc-base64");
 const uid2 = require("uid2");
-import { User } from "../models/User";
+import { IUser, User } from "../models/User";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 const fileUpload = require("express-fileupload");
 
@@ -70,11 +70,13 @@ userRouter.put(
   "/modify/email",
   isAuthenticated,
   (req: Request, res: Response) => {
+    const { email } = req.body;
+
     try {
-      if (req.body.email) {
+      if (email && typeof email === "string") {
         const userChangeMail = req.user;
-        if (userChangeMail.email !== req.body.email) {
-          userChangeMail.email = req.body.email;
+        if (userChangeMail.email !== email) {
+          userChangeMail.email = email;
           userChangeMail.save();
           res.status(200).json({ message: "Your email has been modified" });
         } else {

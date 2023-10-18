@@ -8,12 +8,8 @@ export interface IReview {
   feeling: string;
   opinion: string;
   date: string;
-}
-
-export interface IMovie {
   movieID: number;
   title: string;
-  review: IReview;
 }
 
 const ReviewSchema = new mongoose.Schema<IReview>({
@@ -21,14 +17,17 @@ const ReviewSchema = new mongoose.Schema<IReview>({
   feeling: String,
   opinion: String,
   date: String,
-});
-
-const MovieSchema = new mongoose.Schema<IMovie>({
   movieID: Number,
   title: String,
-  review: [ReviewSchema],
 });
 
-export const ReviewMovie =
-  mongoose.models.ReviewMovie ||
-  mongoose.model<IMovie>("ReviewMovie", MovieSchema);
+// const MovieSchema = new mongoose.Schema<IMovie>({
+//   review: [ReviewSchema],
+// });
+
+export const Review =
+  mongoose.models.Review || mongoose.model<IReview>("Review", ReviewSchema);
+
+// export const ReviewMovie =
+//   mongoose.models.ReviewMovie ||
+//   mongoose.model<IMovie>("ReviewMovie", MovieSchema);

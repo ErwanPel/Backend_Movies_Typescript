@@ -1,6 +1,6 @@
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 import express, { Request, Response } from "express";
-import { IReview, ReviewMovie } from "../models/ReviewMovie";
+import { IReview, Review } from "../models/ReviewMovie";
 import { User } from "../models/User";
 const datefns = require("date-fns");
 
@@ -11,54 +11,55 @@ reviewRouter.post(
   isAuthenticated,
   async (req: Request, res: Response) => {
     try {
-      const { movieID, title, review } = req.body;
+      const { movieID, title, feeling, opinion } = req.body;
 
-      if (movieID && title && review) {
-        const findMovie = await ReviewMovie.findOne({ movieID });
-
+      if (movieID && title && feeling && opinion) {
+        const findMovie = await Review.find({ movieID });
         // if the movie is not save in the database "reViewMovie"
         if (!findMovie) {
-          const createMovie = new ReviewMovie({
+          const createReview = new Review({
+            user: req.user._id,
+            feeling: feeling,
+            opinion: opinion,
+            date: datefns.format(new Date(), "yyyy-MM-dd"),
             movieID,
             title,
-            review: [
-              {
-                user: req.user._id,
-                feeling: review.feeling,
-                opinion: review.opinion,
-                date: datefns.format(new Date(), "yyyy-MM-dd"),
-              },
-            ],
           });
-          await createMovie.save();
-          res.status(200).json(createMovie);
+
+          await createReview.save();
+
+          res.status(200).json({ message: "post created" });
         } else {
           // userIDString is  the user ObecjtID in the middleware in string type
-          const userIDString = req.user._id.toString();
+          const userIDString: string = req.user._id.toString();
+
           let flag = false;
-          findMovie.review.forEach((e: any) => {
+
+          findMovie.forEach((item: IReview) => {
             // reviewIDstring is the user ObecjtID in each object of the review's array
             // in string type
-            const reviewIDString = e.user.toString();
+            const reviewIDString: string = item.user.toString();
             if (reviewIDString === userIDString) {
               flag = true;
+              res.status(200).json({
+                message: "this user has already posted for this film",
+              });
             }
           });
 
           if (!flag) {
-            findMovie.review.push({
+            const createReview = new Review({
               user: req.user._id,
-              feeling: review.feeling,
-              opinion: review.opinion,
+              feeling: feeling,
+              opinion: opinion,
               date: datefns.format(new Date(), "yyyy-MM-dd"),
+              movieID,
+              title,
             });
 
-            await findMovie.save();
-            res.status(200).json(findMovie);
-          } else {
-            res
-              .status(200)
-              .json({ message: "ce user a déjà posté pour ce film" });
+            await createReview.save();
+
+            res.status(200).json({ message: "post created" });
           }
         }
       } else {
@@ -79,15 +80,86 @@ reviewRouter.get(
   async (req: Request, res: Response) => {
     try {
       const { movieID } = req.query;
-      const findMovie = await ReviewMovie.findOne({ movieID }).populate({
-        path: "review.user",
-        select: "username",
+      const findMovie = await Review.find({ movieID }).populate({
+        path: "user",
+        select: ["username", "_id"],
         model: "User",
       });
       if (findMovie) {
-        res.status(200).json(findMovie.review);
+        res.status(200).json(findMovie);
       } else {
         res.status(200).json([]);
+      }
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
+    }
+  }
+);
+
+reviewRouter.get(
+  "/review/form",
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const { movieID } = req.query;
+      const findMovie = await Review.find({ movieID });
+      if (findMovie) {
+        const userIDString: string = req.user._id.toString();
+
+        let findForm: IReview | null = null;
+
+        findMovie.forEach((item: IReview) => {
+          // reviewIDstring is the user ObecjtID in each object of the review's array
+          // in string type
+          const reviewIDString: string = item.user.toString();
+          if (reviewIDString === userIDString) {
+            findForm = item;
+          }
+        });
+
+        if (findForm) res.status(200).json(findForm);
+        else res.status(200).json(null);
+      }
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
+    }
+  }
+);
+
+reviewRouter.put(
+  "/review/:id",
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const { feeling, opinion } = req.body;
+      if (feeling && opinion) {
+        const id = req.params.id;
+
+        const findReview = await Review.findById(id);
+        findReview.feeling = feeling;
+        findReview.opinion = opinion;
+        await findReview.save();
+        res.status(200).json(findReview);
+      } else {
+        throw { status: 400, message: "missing feeling or opinion" };
+      }
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
+    }
+  }
+);
+
+reviewRouter.delete(
+  "/review/:id",
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const deleteReview = await Review.findByIdAndDelete(id);
+      if (deleteReview) {
+        res.status(200).json({ message: "post deleted" });
+      } else {
+        throw { status: 400, message: "no review to delete is found" };
       }
     } catch (error: any) {
       res.status(500 || error.status).json({ message: error.message });
