@@ -16,46 +16,50 @@ userRouter.post(
   fileUpload(),
   async (req: Request, res: Response) => {
     const { username, email, password } = req.body;
-    console.log(username, email, password);
-    try {
-      if (username && email && password) {
-        const salt: string = uid2(20);
-        const hash: string = SHA256(password + salt).toString(encBase64);
-        const token: string = uid2(20);
-
-        const newUser = new User({
-          username,
-          email,
-          salt,
-          token,
-          hash,
-          photo: [],
-        });
-
-        if (req.files) {
-          const pictureToUpload: UploadedFile | UploadedFile[] | undefined =
-            req.files.picture;
-          const result = await cloudinary.uploader.upload(
-            convertToBase64(pictureToUpload),
-            {
-              folder: `/GiveMovies/users/${newUser._id}`,
-            }
-          );
-          console.log(result);
-          newUser.photo.push(result);
-        }
-
-        await newUser.save();
-
-        res.status(200).json({ token: newUser.token, id: newUser._id });
+    if (username && email && password) {
+      const searchEmail = await User.findOne({ email });
+      if (searchEmail) {
+        throw { status: 400, message: "This email is already used" };
       } else {
-        throw {
-          status: 400,
-          message: "missing paramaters (name, email or password)",
-        };
+        try {
+          const salt: string = uid2(20);
+          const hash: string = SHA256(password + salt).toString(encBase64);
+          const token: string = uid2(20);
+
+          const newUser = new User({
+            username,
+            email,
+            salt,
+            token,
+            hash,
+            photo: [],
+          });
+
+          if (req.files) {
+            const pictureToUpload: UploadedFile | UploadedFile[] | undefined =
+              req.files.picture;
+            const result = await cloudinary.uploader.upload(
+              convertToBase64(pictureToUpload),
+              {
+                folder: `/GiveMovies/users/${newUser._id}`,
+              }
+            );
+
+            newUser.photo.push(result);
+          }
+
+          await newUser.save();
+
+          res.status(200).json({ token: newUser.token, id: newUser._id });
+        } catch (error: any) {
+          res.status(500 || error.status).json({ message: error.message });
+        }
       }
-    } catch (error: any) {
-      res.status(500 || error.status).json({ message: error.message });
+    } else {
+      throw {
+        status: 400,
+        message: "missing paramaters (name, email or password)",
+      };
     }
   }
 );
@@ -65,7 +69,8 @@ userRouter.post("/login", async (req: Request, res: Response) => {
     const { email, password } = req.body;
     if (email && password) {
       const searchUser = await User.findOne({ email });
-      if (searchUser) {
+      console.log(searchUser);
+      if (searchUser && !searchUser.isDeleted) {
         const isGoodPassword: string = SHA256(
           password + searchUser.salt
         ).toString(encBase64);
@@ -74,6 +79,8 @@ userRouter.post("/login", async (req: Request, res: Response) => {
         } else {
           throw { status: 400, message: "email or password is incorrect" };
         }
+      } else {
+        throw { status: 400, message: "email or password is incorrect" };
       }
     } else {
       res.status(401).json({ token: null });
@@ -84,7 +91,7 @@ userRouter.post("/login", async (req: Request, res: Response) => {
 });
 
 userRouter.put(
-  "/modify/email",
+  "/profile/email",
   isAuthenticated,
   (req: Request, res: Response) => {
     const { email } = req.body;
@@ -102,6 +109,81 @@ userRouter.put(
       } else {
         throw { status: 400, message: "missing email in request" };
       }
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
+    }
+  }
+);
+
+userRouter.put(
+  "/profile/picture",
+  isAuthenticated,
+  fileUpload(),
+  async (req: Request, res: Response) => {
+    try {
+      if (req.files) {
+        await cloudinary.uploader.destroy(req.user.photo[0].public_id);
+        const pictureToUpload: UploadedFile | UploadedFile[] | undefined =
+          req.files?.picture;
+        const result = await cloudinary.uploader.upload(
+          convertToBase64(pictureToUpload),
+          {
+            folder: `/GiveMovies/users/${req.user._id}`,
+          }
+        );
+        req.user.photo = [];
+        req.user.photo.push(result);
+        req.user.markModified("photo");
+        await req.user.save();
+        res.status(200).json(req.user);
+      } else {
+        throw { status: 400, message: "missing picture to transfer" };
+      }
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
+    }
+  }
+);
+
+userRouter.delete(
+  "/profile/picture",
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const result = await cloudinary.uploader.destroy(
+        req.user.photo[0].public_id
+      );
+      await cloudinary.api.delete_folder(req.user.photo[0].folder);
+      req.user.photo = [];
+      req.user.markModified("photo");
+      req.user.save();
+
+      res.status(200).json(result);
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
+    }
+  }
+);
+
+userRouter.delete(
+  "/profile/user",
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      req.user.username = "deleted account";
+      req.user.email = "";
+      req.user.salt = "";
+      req.user.token = "";
+      req.user.hash = "";
+      req.user.isDeleted = true;
+      if (req.user.photo.length > 0) {
+        await cloudinary.uploader.destroy(req.user.photo[0].public_id);
+        await cloudinary.api.delete_folder(req.user.photo[0].folder);
+        req.user.photo = [];
+        req.user.markModified("photo");
+      }
+      await req.user.save();
+      res.status(200).json(req.user);
     } catch (error: any) {
       res.status(500 || error.status).json({ message: error.message });
     }

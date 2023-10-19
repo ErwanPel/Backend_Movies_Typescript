@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export interface IReview {
+export type TReview = {
   user: {
     type: mongoose.Schema.Types.ObjectId;
     ref: "User";
@@ -10,9 +10,9 @@ export interface IReview {
   date: string;
   movieID: number;
   title: string;
-}
+};
 
-const ReviewSchema = new mongoose.Schema<IReview>({
+const ReviewSchema = new mongoose.Schema<TReview>({
   user: Object,
   feeling: String,
   opinion: String,
@@ -26,7 +26,7 @@ const ReviewSchema = new mongoose.Schema<IReview>({
 // });
 
 export const Review =
-  mongoose.models.Review || mongoose.model<IReview>("Review", ReviewSchema);
+  mongoose.models.Review || mongoose.model<TReview>("Review", ReviewSchema);
 
 // export const ReviewMovie =
 //   mongoose.models.ReviewMovie ||

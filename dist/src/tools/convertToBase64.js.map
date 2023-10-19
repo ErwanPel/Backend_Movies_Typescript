@@ -1,0 +1,1 @@
+{"version":3,"file":"convertToBase64.js","sourceRoot":"","sources":["../../../src/tools/convertToBase64.ts"],"names":[],"mappings":";;;AAEO,MAAM,eAAe,GAAG,CAAC,IAAS,EAAE,EAAE;IAC3C,OAAO,QAAQ,IAAI,CAAC,QAAQ,WAAW,IAAI,CAAC,IAAI,CAAC,QAAQ,CAAC,QAAQ,CAAC,EAAE,CAAC;AACxE,CAAC,CAAC;AAFW,QAAA,eAAe,mBAE1B"}

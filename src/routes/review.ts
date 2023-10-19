@@ -1,7 +1,6 @@
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 import express, { Request, Response } from "express";
-import { IReview, Review } from "../models/ReviewMovie";
-import { User } from "../models/User";
+import { TReview, Review } from "../models/ReviewMovie";
 const datefns = require("date-fns");
 
 export const reviewRouter = express.Router();
@@ -35,7 +34,7 @@ reviewRouter.post(
 
           let flag = false;
 
-          findMovie.forEach((item: IReview) => {
+          findMovie.forEach((item: TReview) => {
             // reviewIDstring is the user ObecjtID in each object of the review's array
             // in string type
             const reviewIDString: string = item.user.toString();
@@ -106,9 +105,9 @@ reviewRouter.get(
       if (findMovie) {
         const userIDString: string = req.user._id.toString();
 
-        let findForm: IReview | null = null;
+        let findForm: TReview | null = null;
 
-        findMovie.forEach((item: IReview) => {
+        findMovie.forEach((item: TReview) => {
           // reviewIDstring is the user ObecjtID in each object of the review's array
           // in string type
           const reviewIDString: string = item.user.toString();
