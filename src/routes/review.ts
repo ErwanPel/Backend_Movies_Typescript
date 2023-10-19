@@ -79,13 +79,14 @@ reviewRouter.get(
   async (req: Request, res: Response) => {
     try {
       const { movieID } = req.query;
-      const findMovie = await Review.find({ movieID }).populate({
-        path: "user",
-        select: ["username", "_id"],
-        model: "User",
-      });
+      const findMovie = await Review.find({ movieID });
       if (findMovie) {
-        res.status(200).json(findMovie);
+        const findMoviePopulate = await Review.find({ movieID }).populate({
+          path: "user",
+          select: ["username", "_id"],
+          model: "User",
+        });
+        res.status(200).json(findMoviePopulate);
       } else {
         res.status(200).json([]);
       }
