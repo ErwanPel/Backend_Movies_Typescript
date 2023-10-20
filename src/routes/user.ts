@@ -11,17 +11,38 @@ import { UploadedFile } from "express-fileupload";
 
 export const userRouter = express.Router();
 
+userRouter.get(
+  "/profile/user",
+  isAuthenticated,
+  (req: Request, res: Response) => {
+    try {
+      const { _id, username, email, photo } = req.user;
+      if (!req.user.isDeleted) {
+        let photoResponse: string[] = [];
+        if (photo[0]?.secure_url) {
+          photoResponse.push(photo[0].secure_url);
+        }
+        res.status(200).json({ _id, username, email, photo: photoResponse });
+      } else {
+        throw { status: 400, message: "user is not found" };
+      }
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
+    }
+  }
+);
+
 userRouter.post(
   "/signin",
   fileUpload(),
   async (req: Request, res: Response) => {
-    const { username, email, password } = req.body;
-    if (username && email && password) {
-      const searchEmail = await User.findOne({ email });
-      if (searchEmail) {
-        throw { status: 400, message: "This email is already used" };
-      } else {
-        try {
+    try {
+      const { username, email, password } = req.body;
+      if (username && email && password) {
+        const searchEmail = await User.findOne({ email });
+        if (searchEmail) {
+          throw { status: 400, message: "This email is already used" };
+        } else {
           const salt: string = uid2(20);
           const hash: string = SHA256(password + salt).toString(encBase64);
           const token: string = uid2(20);
@@ -51,15 +72,15 @@ userRouter.post(
           await newUser.save();
 
           res.status(200).json({ token: newUser.token, id: newUser._id });
-        } catch (error: any) {
-          res.status(500 || error.status).json({ message: error.message });
         }
+      } else {
+        throw {
+          status: 400,
+          message: "missing paramaters (name, email or password)",
+        };
       }
-    } else {
-      throw {
-        status: 400,
-        message: "missing paramaters (name, email or password)",
-      };
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
     }
   }
 );
@@ -108,6 +129,33 @@ userRouter.put(
         }
       } else {
         throw { status: 400, message: "missing email in request" };
+      }
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
+    }
+  }
+);
+
+userRouter.post(
+  "/profile/picture",
+  isAuthenticated,
+  fileUpload(),
+  async (req: Request, res: Response) => {
+    try {
+      if (req.files) {
+        const pictureToUpload: UploadedFile | UploadedFile[] | undefined =
+          req.files?.picture;
+        const result = await cloudinary.uploader.upload(
+          convertToBase64(pictureToUpload),
+          {
+            folder: `/GiveMovies/users/${req.user._id}`,
+          }
+        );
+        req.user.photo.push(result);
+        req.user.save();
+        res.status(200).json({ message: "picture uploaded" });
+      } else {
+        throw { status: 400, message: "missing picture to transfer" };
       }
     } catch (error: any) {
       res.status(500 || error.status).json({ message: error.message });
