@@ -18,9 +18,9 @@ userRouter.get(
     try {
       const { _id, username, email, photo } = req.user;
       if (!req.user.isDeleted) {
-        let photoResponse: string[] = [];
+        let photoResponse = [];
         if (photo[0]?.secure_url) {
-          photoResponse.push(photo[0].secure_url);
+          photoResponse.push({ secure_url: photo[0].secure_url });
         }
         res.status(200).json({ _id, username, email, photo: photoResponse });
       } else {
