@@ -83,7 +83,7 @@ reviewRouter.get(
       if (findMovie) {
         const findMoviePopulate = await Review.find({ movieID }).populate({
           path: "user",
-          select: ["username", "_id"],
+          select: ["username", "_id", "photo.secure_url"],
           model: "User",
         });
         res.status(200).json(findMoviePopulate);
