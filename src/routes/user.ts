@@ -198,15 +198,13 @@ userRouter.delete(
   isAuthenticated,
   async (req: Request, res: Response) => {
     try {
-      const result = await cloudinary.uploader.destroy(
-        req.user.photo[0].public_id
-      );
+      await cloudinary.uploader.destroy(req.user.photo[0].public_id);
       await cloudinary.api.delete_folder(req.user.photo[0].folder);
       req.user.photo = [];
       req.user.markModified("photo");
       req.user.save();
 
-      res.status(200).json(result);
+      res.status(200).json({ message: "picture deleted" });
     } catch (error: any) {
       res.status(500 || error.status).json({ message: error.message });
     }
@@ -231,7 +229,7 @@ userRouter.delete(
         req.user.markModified("photo");
       }
       await req.user.save();
-      res.status(200).json(req.user);
+      res.status(200).json({ message: "the user have been deleted" });
     } catch (error: any) {
       res.status(500 || error.status).json({ message: error.message });
     }

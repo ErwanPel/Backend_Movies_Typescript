@@ -11,7 +11,7 @@ export type IUser = {
 };
 
 const UserSchema = new mongoose.Schema<IUser>({
-  username: { type: String, unique: true },
+  username: { type: String },
   email: { type: String, unique: true },
   photo: [],
   salt: { require: true, type: String },
