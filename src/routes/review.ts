@@ -23,6 +23,8 @@ reviewRouter.post(
             date: datefns.format(new Date(), "yyyy-MM-dd"),
             movieID,
             title,
+            like: [],
+            dislike: [],
           });
 
           await createReview.save();
@@ -54,6 +56,8 @@ reviewRouter.post(
               date: datefns.format(new Date(), "yyyy-MM-dd"),
               movieID,
               title,
+              like: [],
+              dislike: [],
             });
 
             await createReview.save();
@@ -81,6 +85,7 @@ reviewRouter.get(
       const { movieID } = req.query;
       const findMovie = await Review.find<TReview>({ movieID });
       if (findMovie) {
+        console.log(findMovie);
         const findMoviePopulate = await Review.find<TReview>({
           movieID,
         })
@@ -163,11 +168,89 @@ reviewRouter.delete(
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+
       const deleteReview = await Review.findByIdAndDelete<TReview>(id);
       if (deleteReview) {
         res.status(200).json({ message: "post deleted" });
       } else {
         throw { status: 400, message: "no review to delete is found" };
+      }
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
+    }
+  }
+);
+
+reviewRouter.post(
+  "/review/preference",
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const { movieID } = req.query;
+      const { preference, userID } = req.body;
+      const findMovie = await Review.findOne({ movieID });
+      if (findMovie) {
+        if (preference === "like") {
+          const isUserInDislike = findMovie.dislike.findIndex(
+            (item: TReview) => item === userID
+          );
+
+          if (isUserInDislike === -1) {
+            const isUserInLike = findMovie.like.findIndex(
+              (item: TReview) => item === userID
+            );
+
+            if (isUserInLike === -1) {
+              findMovie.like.push(userID);
+              findMovie.markModified("like");
+              findMovie.save();
+              res.status(200).json(findMovie);
+            } else {
+              findMovie.like.splice(isUserInLike, 1);
+              console.log(findMovie);
+              findMovie.markModified("like");
+              findMovie.save();
+              res.status(200).json(findMovie);
+            }
+          } else {
+            findMovie.dislike.splice(isUserInDislike, 1);
+            findMovie.like.push(userID);
+            findMovie.markModified("like");
+            findMovie.markModified("dislike");
+            findMovie.save();
+            res.status(200).json(findMovie);
+          }
+        } else {
+          const isUserInLike = findMovie.like.findIndex(
+            (item: TReview) => item === userID
+          );
+
+          if (isUserInLike === -1) {
+            const isUserInDislike = findMovie.dislike.findIndex(
+              (item: TReview) => item === userID
+            );
+
+            if (isUserInDislike === -1) {
+              findMovie.dislike.push(userID);
+              findMovie.markModified("dislike");
+              findMovie.save();
+              res.status(200).json(findMovie);
+            } else {
+              findMovie.dislike.splice(isUserInDislike, 1);
+              console.log(findMovie);
+              findMovie.markModified("dislike");
+              findMovie.save();
+              res.status(200).json(findMovie);
+            }
+          } else {
+            findMovie.like.splice(isUserInLike, 1);
+            findMovie.dislike.push(userID);
+            findMovie.markModified("like");
+            findMovie.markModified("dislike");
+            findMovie.save();
+            res.status(200).json(findMovie);
+          }
+        }
       }
     } catch (error: any) {
       res.status(500 || error.status).json({ message: error.message });

@@ -10,6 +10,8 @@ export type TReview = {
   date: string;
   movieID: number;
   title: string;
+  like: string[];
+  dislike: string[];
 };
 
 const ReviewSchema = new mongoose.Schema<TReview>({
@@ -19,6 +21,8 @@ const ReviewSchema = new mongoose.Schema<TReview>({
   date: String,
   movieID: Number,
   title: String,
+  like: [String],
+  dislike: [String],
 });
 
 // const MovieSchema = new mongoose.Schema<IMovie>({

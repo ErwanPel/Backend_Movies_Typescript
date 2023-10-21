@@ -192,7 +192,7 @@ userRouter.put(
         req.user.photo.push(result);
         req.user.markModified("photo");
         await req.user.save();
-        res.status(200).json(req.user);
+        res.status(200).json({ message: "picture uploaded" });
       } else {
         throw { status: 400, message: "missing picture to transfer" };
       }
@@ -238,7 +238,7 @@ userRouter.delete(
         req.user.markModified("photo");
       }
       await req.user.save();
-      res.status(200).json({ message: "the user have been deleted" });
+      res.status(200).json({ message: "Your account has been deleted" });
     } catch (error: any) {
       res.status(500 || error.status).json({ message: error.message });
     }
