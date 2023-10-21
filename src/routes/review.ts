@@ -13,7 +13,7 @@ reviewRouter.post(
       const { movieID, title, feeling, opinion } = req.body;
 
       if (movieID && title && feeling && opinion) {
-        const findMovie = await Review.find({ movieID });
+        const findMovie = await Review.find<TReview>({ movieID });
         // if the movie is not save in the database "reViewMovie"
         if (!findMovie) {
           const createReview = new Review({
@@ -32,7 +32,7 @@ reviewRouter.post(
           // userIDString is  the user ObecjtID in the middleware in string type
           const userIDString: string = req.user._id.toString();
 
-          let flag = false;
+          let flag: boolean = false;
 
           findMovie.forEach((item: TReview) => {
             // reviewIDstring is the user ObecjtID in each object of the review's array
@@ -47,7 +47,7 @@ reviewRouter.post(
           });
 
           if (!flag) {
-            const createReview = new Review({
+            const createReview = new Review<TReview>({
               user: req.user._id,
               feeling: feeling,
               opinion: opinion,
@@ -79,9 +79,9 @@ reviewRouter.get(
   async (req: Request, res: Response) => {
     try {
       const { movieID } = req.query;
-      const findMovie: TReview[] = await Review.find({ movieID });
+      const findMovie = await Review.find<TReview>({ movieID });
       if (findMovie) {
-        const findMoviePopulate = await Review.find({
+        const findMoviePopulate = await Review.find<TReview>({
           movieID,
         })
           .populate({
@@ -106,7 +106,7 @@ reviewRouter.get(
   async (req: Request, res: Response) => {
     try {
       const { movieID } = req.query;
-      const findMovie = await Review.find({ movieID });
+      const findMovie = await Review.find<TReview>({ movieID });
       if (findMovie) {
         const userIDString: string = req.user._id.toString();
 
@@ -140,10 +140,14 @@ reviewRouter.put(
         const id = req.params.id;
 
         const findReview = await Review.findById(id);
-        findReview.feeling = feeling;
-        findReview.opinion = opinion;
-        await findReview.save();
-        res.status(200).json(findReview);
+        if (findReview) {
+          findReview.feeling = feeling;
+          findReview.opinion = opinion;
+          await findReview.save();
+          res.status(200).json(findReview);
+        } else {
+          throw { status: 400, message: `no review is found with ID ${id}` };
+        }
       } else {
         throw { status: 400, message: "missing feeling or opinion" };
       }
@@ -159,7 +163,7 @@ reviewRouter.delete(
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const deleteReview = await Review.findByIdAndDelete(id);
+      const deleteReview = await Review.findByIdAndDelete<TReview>(id);
       if (deleteReview) {
         res.status(200).json({ message: "post deleted" });
       } else {

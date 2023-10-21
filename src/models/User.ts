@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export type IUser = {
+export type TUser = {
   username: string;
   email: string;
   photo: [];
@@ -10,9 +10,13 @@ export type IUser = {
   isDeleted: boolean;
 };
 
-const UserSchema = new mongoose.Schema<IUser>({
+export interface IUserwithID extends TUser {
+  _id: string;
+}
+
+const UserSchema = new mongoose.Schema<TUser>({
   username: { type: String },
-  email: { type: String, unique: true },
+  email: { type: String },
   photo: [],
   salt: { require: true, type: String },
   token: { require: true, type: String },
@@ -24,4 +28,4 @@ const UserSchema = new mongoose.Schema<IUser>({
 });
 
 export const User =
-  mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+  mongoose.models.User || mongoose.model<TUser>("User", UserSchema);

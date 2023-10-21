@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 const SHA256 = require("crypto-js/sha256");
 const encBase64 = require("crypto-js/enc-base64");
 const uid2 = require("uid2");
-import { IUser, User } from "../models/User";
+import { User, TUser, IUserwithID } from "../models/User";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 const fileUpload = require("express-fileupload");
 const cloudinary = require("cloudinary").v2;
@@ -39,39 +39,44 @@ userRouter.post(
     try {
       const { username, email, password } = req.body;
       if (username && email && password) {
-        const searchEmail = await User.findOne({ email });
+        const searchEmail = await User.findOne<TUser>({ email });
         if (searchEmail) {
           throw { status: 400, message: "This email is already used" };
         } else {
-          const salt: string = uid2(20);
-          const hash: string = SHA256(password + salt).toString(encBase64);
-          const token: string = uid2(20);
+          const searchName = await User.findOne<TUser>({ username });
+          if (searchName || username === "deleted account") {
+            throw { status: 400, message: "This username is already used" };
+          } else {
+            const salt: string = uid2(20);
+            const hash: string = SHA256(password + salt).toString(encBase64);
+            const token: string = uid2(20);
 
-          const newUser = new User({
-            username,
-            email,
-            salt,
-            token,
-            hash,
-            photo: [],
-          });
+            const newUser = new User({
+              username,
+              email,
+              salt,
+              token,
+              hash,
+              photo: [],
+            });
 
-          if (req.files) {
-            const pictureToUpload: UploadedFile | UploadedFile[] | undefined =
-              req.files.picture;
-            const result = await cloudinary.uploader.upload(
-              convertToBase64(pictureToUpload),
-              {
-                folder: `/GiveMovies/users/${newUser._id}`,
-              }
-            );
+            if (req.files) {
+              const pictureToUpload: UploadedFile | UploadedFile[] | undefined =
+                req.files.picture;
+              const result = await cloudinary.uploader.upload(
+                convertToBase64(pictureToUpload),
+                {
+                  folder: `/GiveMovies/users/${newUser._id}`,
+                }
+              );
 
-            newUser.photo.push(result);
+              newUser.photo.push(result);
+            }
+
+            await newUser.save();
+
+            res.status(200).json({ token: newUser.token, id: newUser._id });
           }
-
-          await newUser.save();
-
-          res.status(200).json({ token: newUser.token, id: newUser._id });
         }
       } else {
         throw {
@@ -89,7 +94,7 @@ userRouter.post("/login", async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     if (email && password) {
-      const searchUser = await User.findOne({ email });
+      const searchUser = await User.findOne<IUserwithID>({ email });
       console.log(searchUser);
       if (searchUser && !searchUser.isDeleted) {
         const isGoodPassword: string = SHA256(
@@ -114,18 +119,22 @@ userRouter.post("/login", async (req: Request, res: Response) => {
 userRouter.put(
   "/profile/email",
   isAuthenticated,
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     const { email } = req.body;
-
     try {
       if (email && typeof email === "string") {
-        const userChangeMail = req.user;
-        if (userChangeMail.email !== email) {
-          userChangeMail.email = email;
-          userChangeMail.save();
-          res.status(200).json({ message: "Your email has been modified" });
+        const searchEmail = await User.findOne<TUser>({ email });
+        if (searchEmail) {
+          throw { status: 400, message: "This email is already used" };
         } else {
-          throw { status: 400, message: "this is the same email" };
+          const userChangeMail = req.user;
+          if (userChangeMail.email !== email) {
+            userChangeMail.email = email;
+            userChangeMail.save();
+            res.status(200).json({ message: "Your email has been modified" });
+          } else {
+            throw { status: 400, message: "this is the same email" };
+          }
         }
       } else {
         throw { status: 400, message: "missing email in request" };
