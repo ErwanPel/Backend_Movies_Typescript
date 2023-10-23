@@ -184,73 +184,73 @@ reviewRouter.delete(
 );
 
 reviewRouter.post(
-  "/review/preference",
+  "/review/preference/:id",
   isAuthenticated,
   async (req: Request, res: Response) => {
     try {
-      const { movieID } = req.query;
+      const { id } = req.params;
       const { preference, userID } = req.body;
-      const findMovie = await Review.findOne({ movieID });
-      if (findMovie) {
+      const findReview = await Review.findById(id);
+      if (findReview) {
         if (preference === "like") {
-          const isUserInDislike = findMovie.dislike.findIndex(
+          const isUserInDislike = findReview.dislike.findIndex(
             (item: TReview) => item === userID
           );
 
           if (isUserInDislike === -1) {
-            const isUserInLike = findMovie.like.findIndex(
+            const isUserInLike = findReview.like.findIndex(
               (item: TReview) => item === userID
             );
 
             if (isUserInLike === -1) {
-              findMovie.like.push(userID);
-              findMovie.markModified("like");
-              findMovie.save();
-              res.status(200).json(findMovie);
+              findReview.like.push(userID);
+              findReview.markModified("like");
+              findReview.save();
+              res.status(200).json(findReview);
             } else {
-              findMovie.like.splice(isUserInLike, 1);
-              console.log(findMovie);
-              findMovie.markModified("like");
-              findMovie.save();
-              res.status(200).json(findMovie);
+              findReview.like.splice(isUserInLike, 1);
+              console.log(findReview);
+              findReview.markModified("like");
+              findReview.save();
+              res.status(200).json(findReview);
             }
           } else {
-            findMovie.dislike.splice(isUserInDislike, 1);
-            findMovie.like.push(userID);
-            findMovie.markModified("like");
-            findMovie.markModified("dislike");
-            findMovie.save();
-            res.status(200).json(findMovie);
+            findReview.dislike.splice(isUserInDislike, 1);
+            findReview.like.push(userID);
+            findReview.markModified("like");
+            findReview.markModified("dislike");
+            findReview.save();
+            res.status(200).json(findReview);
           }
         } else {
-          const isUserInLike = findMovie.like.findIndex(
+          const isUserInLike = findReview.like.findIndex(
             (item: TReview) => item === userID
           );
 
           if (isUserInLike === -1) {
-            const isUserInDislike = findMovie.dislike.findIndex(
+            const isUserInDislike = findReview.dislike.findIndex(
               (item: TReview) => item === userID
             );
 
             if (isUserInDislike === -1) {
-              findMovie.dislike.push(userID);
-              findMovie.markModified("dislike");
-              findMovie.save();
-              res.status(200).json(findMovie);
+              findReview.dislike.push(userID);
+              findReview.markModified("dislike");
+              findReview.save();
+              res.status(200).json(findReview);
             } else {
-              findMovie.dislike.splice(isUserInDislike, 1);
-              console.log(findMovie);
-              findMovie.markModified("dislike");
-              findMovie.save();
-              res.status(200).json(findMovie);
+              findReview.dislike.splice(isUserInDislike, 1);
+              console.log(findReview);
+              findReview.markModified("dislike");
+              findReview.save();
+              res.status(200).json(findReview);
             }
           } else {
-            findMovie.like.splice(isUserInLike, 1);
-            findMovie.dislike.push(userID);
-            findMovie.markModified("like");
-            findMovie.markModified("dislike");
-            findMovie.save();
-            res.status(200).json(findMovie);
+            findReview.like.splice(isUserInLike, 1);
+            findReview.dislike.push(userID);
+            findReview.markModified("like");
+            findReview.markModified("dislike");
+            findReview.save();
+            res.status(200).json(findReview);
           }
         }
       }
