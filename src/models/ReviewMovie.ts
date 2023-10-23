@@ -10,6 +10,7 @@ export type TReview = {
   date: string;
   movieID: number;
   title: string;
+  poster: string;
   like: string[];
   dislike: string[];
 };
@@ -21,17 +22,10 @@ const ReviewSchema = new mongoose.Schema<TReview>({
   date: String,
   movieID: Number,
   title: String,
+  poster: String,
   like: [String],
   dislike: [String],
 });
 
-// const MovieSchema = new mongoose.Schema<IMovie>({
-//   review: [ReviewSchema],
-// });
-
 export const Review =
   mongoose.models.Review || mongoose.model<TReview>("Review", ReviewSchema);
-
-// export const ReviewMovie =
-//   mongoose.models.ReviewMovie ||
-//   mongoose.model<IMovie>("ReviewMovie", MovieSchema);

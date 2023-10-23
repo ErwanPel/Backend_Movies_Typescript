@@ -10,9 +10,9 @@ reviewRouter.post(
   isAuthenticated,
   async (req: Request, res: Response) => {
     try {
-      const { movieID, title, feeling, opinion } = req.body;
+      const { movieID, title, feeling, opinion, poster } = req.body;
 
-      if (movieID && title && feeling && opinion) {
+      if (movieID && title && feeling && opinion && poster) {
         const findMovie = await Review.find<TReview>({ movieID });
         // if the movie is not save in the database "reViewMovie"
         if (!findMovie) {
@@ -23,6 +23,7 @@ reviewRouter.post(
             date: datefns.format(new Date(), "yyyy-MM-dd"),
             movieID,
             title,
+            poster,
             like: [],
             dislike: [],
           });
@@ -56,6 +57,7 @@ reviewRouter.post(
               date: datefns.format(new Date(), "yyyy-MM-dd"),
               movieID,
               title,
+              poster,
               like: [],
               dislike: [],
             });
