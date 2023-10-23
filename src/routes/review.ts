@@ -1,9 +1,14 @@
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 import express, { Request, Response } from "express";
-import { TReview, Review } from "../models/ReviewMovie";
+import { TReview, Review, TReviewPopulate } from "../models/ReviewMovie";
 const datefns = require("date-fns");
+const Mongoose = require("mongoose");
 
 export const reviewRouter = express.Router();
+
+type TFilterFeeling = {
+  feeling?: "Good" | "Neutral" | "Bad";
+};
 
 reviewRouter.post(
   "/review",
@@ -131,6 +136,85 @@ reviewRouter.get(
         if (findForm) res.status(200).json(findForm);
         else res.status(200).json(null);
       }
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
+    }
+  }
+);
+
+reviewRouter.get(
+  "/review/all",
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const filter: TFilterFeeling | undefined = {};
+      if (req.query.feeling === "Good") {
+        filter["feeling"] = "Good";
+      } else if (req.query.feeling === "Neutral") {
+        filter["feeling"] = "Neutral";
+      } else if (req.query.feeling === " Bad") {
+        filter["feeling"] = "Bad";
+      }
+      const findReviews = await Review.find(filter);
+      if (findReviews) {
+        const findReviewsAndPopulate = await Review.find(filter)
+          .populate({
+            path: "user",
+            select: ["username", "_id", "photo.secure_url"],
+            model: "User",
+          })
+          .sort({ date: -1 });
+        res.status(200).json(findReviewsAndPopulate);
+      } else {
+        throw { status: 400, message: "No reviews is found" };
+      }
+    } catch (error: any) {
+      res.status(500 || error.status).json({ message: error.message });
+    }
+  }
+);
+
+reviewRouter.get(
+  "/review/:id",
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const findReviews = await Review.find();
+      if (findReviews) {
+        const findUserReviewsAndPopulate = await Review.find<TReviewPopulate>()
+          .populate({
+            path: "user",
+            select: ["username", "_id", "photo.secure_url"],
+            model: "User",
+          })
+          .sort({ date: -1 });
+        let arraySort: TReviewPopulate[] = [];
+        findUserReviewsAndPopulate.forEach((item) => {
+          if (item.user) {
+            if (item.user._id.toString() === id) {
+              arraySort.push(item);
+            }
+          }
+        });
+        res.status(200).json(arraySort);
+      } else {
+        throw { status: 400, message: "No review is found" };
+      }
+
+      // if (findReviews) {
+      //   const findReviewsAndPopulate = await Review.find(filter)
+      //     .populate({
+      //       path: "user",
+      //       select: ["username", "_id", "photo.secure_url"],
+      //       model: "User",
+      //     })
+      //     .sort({ date: -1 });
+      //   res.status(200).json(findReviewsAndPopulate);
+      // } else {
+      //   throw { status: 400, message: "No reviews is found" };
+      // }
     } catch (error: any) {
       res.status(500 || error.status).json({ message: error.message });
     }

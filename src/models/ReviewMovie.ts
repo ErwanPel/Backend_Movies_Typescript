@@ -1,5 +1,21 @@
 import mongoose from "mongoose";
 
+export type TReviewPopulate = {
+  user: {
+    _id: string;
+    username: string;
+    photo: [];
+  };
+  feeling: string;
+  opinion: string;
+  date: string;
+  movieID: number;
+  title: string;
+  poster: string;
+  like: string[];
+  dislike: string[];
+};
+
 export type TReview = {
   user: {
     type: mongoose.Schema.Types.ObjectId;
