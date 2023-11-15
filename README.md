@@ -11,7 +11,11 @@ Project GiveMovies - Backend
 	<img alt="Star" src="https://img.shields.io/badge/you%20like%20%3F-STAR%20ME-blue.svg?style=flat-square">
 </p>
 
+## Tech Stack
 
+[**Client:**](https://github.com/ErwanPel/Marvel-frontend-SASS) TypeScript, React Native, NativeWind.css
+
+**Server:** TypeScript, Node.js, Express.js, MongoDB
 
 
 ## Overview
@@ -19,7 +23,7 @@ Project GiveMovies - Backend
 This is my first personal full-stack project using TypeScript. I wanted to create a mobile application to consult a list of films, allowing users to post and consult reviews with a like/dislike system and the possibility for each user to manage his or her profile. I also set up a "Random Movies" mode to help the user to choose a movie if inspiration fails. 
 </br>
 
-This project manages routes for :
+This project manages 18 routes for :
 
 1) User registration and connection.
 2) Add, delete or modify profile photo.
@@ -31,7 +35,6 @@ This project manages routes for :
 
 </br>
 
-Backend development uses TypeScript with Node.js and Express.js / MongoDB servers for database management (mongoose package). This server uses 18 routes to perform the above tasks.
 
 </br>
 This project uses the Movies API of bootcamp "Le Reacteur" and requires an API key to obtain the movies.
