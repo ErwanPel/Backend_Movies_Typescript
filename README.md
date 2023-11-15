@@ -16,7 +16,7 @@ Project GiveMovies - Backend
 
 ## Overview
 
-This is my first personal full-stack project using TypeScript. I wanted to create a mobile application to consult a list of films, allowing users to post and consult reviews with a like/dislike system and the possibility for each user to manage his or her profile. I also set up a "Random Movies" mode to help the user choose a movie if inspiration fails. 
+This is my first personal full-stack project using TypeScript. I wanted to create a mobile application to consult a list of films, allowing users to post and consult reviews with a like/dislike system and the possibility for each user to manage his or her profile. I also set up a "Random Movies" mode to help the user to choose a movie if inspiration fails. 
 </br>
 
 This project manages routes for :
