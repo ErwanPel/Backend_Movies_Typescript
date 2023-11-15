@@ -13,7 +13,7 @@ Project GiveMovies - Backend
 
 ## Tech Stack
 
-[**Client:**](https://github.com/ErwanPel/Marvel-frontend-SASS) TypeScript, React Native, NativeWind.css
+[**Client:**](https://github.com/ErwanPel/GiveMovies_Frontend_ReactNative) TypeScript, React Native, NativeWind.css
 
 **Server:** TypeScript, Node.js, Express.js, MongoDB
 
