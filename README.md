@@ -41,6 +41,8 @@ This project uses the Movies API of bootcamp "Le Reacteur" and requires an API k
 The "isAuthenticated" middleware ensures that each user has a secure connection to the application.
 In development, TypeScript is used to check variables, and the Zod package dynamically checks the input/output of promises.
 
+The server route to delete a user is actually a soft delete. Only the user’s sensitive information is deleted. Reviews not deleted by the user are kept with as username "deleted account".
+
 ## Installation and usage
 
 Be sure, you have installed [Node.js](https://nodejs.org/en). You have to install the "LTS" version.
